@@ -1,10 +1,10 @@
-define(function(){
+define(function(require, exports, module) {
 
   'use strict';
   
   var degreesPerRadian = 360 / (2 * Math.PI);
 
-  return {
+  exports = module.exports = {
 
     // Converts degrees to radians.
     getRadians: function(degrees){

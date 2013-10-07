@@ -1,25 +1,57 @@
-define(function(require){
+define(function(require, exports, module) {
 
   'use strict';
 
   var Modernizr = require('modernizr'),
     Backbone = require('backbone'),
-    eventMediator = require('core/eventMediator'),
-    util = require('core/util'),
-    PanelView = require('views/panelView'),
-    carouselTemplate = require('text!templates/carousel.handlebars');
+    carouselTemplate = require('text!templates/carousel.handlebars'),
+    PanelView = require('views/panelView');
 
-  var CarouselView = Backbone.View.extend({
+  exports = module.exports = Backbone.View.extend({
+
+    constructor: function(panelsCollection, eventMediator, util){
+      this.panelsCollection = panelsCollection;
+      this.eventMediator = eventMediator;
+      this.util = util;
+      Backbone.View.apply(this);
+    },
+
+    initialize: function(){
+
+      this.panelsCollection.on('reset', this._addPanels, this);
+      this.panelsCollection.on('add', this._addPanel, this);
+      this.panelsCollection.on('remove', this._removePanel, this);
+
+      this.eventMediator.on('delete', this._deleteHandler, this);
+      this.eventMediator.on('enter', this._enterHandler, this);
+      this.eventMediator.on('rightArrow', this._rightArrowHandler, this);
+      this.eventMediator.on('leftArrow', this._leftArrowHandler, this);
+
+      this.panelOpacity = 0.9;
+      this.carouselRotation = 0;
+      this.panelRotation = 0;
+
+    },
+
+    render: function(){
+      this.setElement(carouselTemplate);
+      this.$carouselInner = this.$('.carousel-inner');
+      this.carouselInner = this.$carouselInner.get(0);
+      return this;
+    },
+
+    remove: function(){
+      this.panelsCollection.off(null, null, this);
+      this.eventMediator.off(null, null, this);
+    },
 
     _addPanel: function(panelModel){
-          
-      var panelView = new PanelView({
-        model: panelModel
-      });
-          
+
+      var panelView = new PanelView(panelModel);
+
       panelView.render().$el
         .appendTo(this.$carouselInner)
-        .css('background-color', util.getRandomRGBA(this.options.panelOpacity));
+        .css('background-color', this.util.getRandomRGBA(this.panelOpacity));
 
       this._repositionPanels();
       this.carouselRotation = this.panelRotation;
@@ -28,7 +60,7 @@ define(function(require){
     },
 
     _addPanels: function(){
-      this.collection.each(this._addPanel, this);
+      this.panelsCollection.each(this._addPanel, this);
     },
 
     _adjustPanelTransformString: function(carouselView, translate){
@@ -40,12 +72,12 @@ define(function(require){
     },
 
     _deleteHandler: function(){
-      this.collection.pop();
+      this.panelsCollection.pop();
     },
 
     _enterHandler: function(){
-      var label = this.collection.models.length + 1;
-      this.collection.create({
+      var label = this.panelsCollection.models.length + 1;
+      this.panelsCollection.create({
         label: '' + label
       });
     },
@@ -77,7 +109,7 @@ define(function(require){
         this.panelRotation = translate = 0;
       } else {
         this.panelRotation = 360 / numPanels;
-        translate = 105 / Math.tan(util.getRadians(this.panelRotation / 2));
+        translate = 105 / Math.tan(this.util.getRadians(this.panelRotation / 2));
       }
 
       $panels.each(this._adjustPanelTransformString(this, translate));
@@ -87,33 +119,8 @@ define(function(require){
     _rotate: function(){
       this.carouselInner.style[Modernizr.prefixed('transform')] = 'rotateY(' +
         this.carouselRotation + 'deg)';
-    },
-
-    initialize: function(){
-
-      this.collection.bind('reset', this._addPanels, this);
-      this.collection.bind('add', this._addPanel, this);
-      this.collection.bind('remove', this._removePanel, this);
-
-      eventMediator.on('delete', this._deleteHandler, this);
-      eventMediator.on('enter', this._enterHandler, this);
-      eventMediator.on('rightArrow', this._rightArrowHandler, this);
-      eventMediator.on('leftArrow', this._leftArrowHandler, this);
-
-      this.carouselRotation = 0;
-      this.panelRotation = 0;
-
-    },
-
-    render: function(){
-      this.setElement(carouselTemplate);
-      this.$carouselInner = this.$('.carousel-inner');
-      this.carouselInner = this.$carouselInner.get(0);
-      return this;
     }
-  
-  });
- 
-  return CarouselView;
-   
+
+  }, { infect: ['panelsCollection', 'eventMediator', 'util'] });
+
 });

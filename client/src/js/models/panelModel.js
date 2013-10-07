@@ -1,15 +1,11 @@
-define(function(require){
+define(function(require, exports, module) {
 
   'use strict';
 
   var Backbone = require('backbone');
 
-  var PanelModel = Backbone.Model.extend({
-    defaults: {
-      'label': '?'
-    }
+  exports = module.exports = Backbone.Model.extend({
+    defaults: { label: '?' }
   });
-
-  return PanelModel;
 
 });

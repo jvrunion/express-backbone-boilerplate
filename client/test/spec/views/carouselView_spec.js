@@ -1,71 +1,62 @@
 define(function(require){
 
   'use strict';
-  
-  var PanelsCollection = require('collections/panelsCollection'),
-    CarouselView = require('views/carouselView');
 
-  describe('CarouselView', function(){
+  var infector = require('infector'),
+    eventMediator = require('core/eventMediator'),
+    CarouselView = require('views/carouselView'),
+    PanelsCollection = require('collections/panelsCollection'),
+    util = require('core/util');
+
+  describe('carouselView', function(){
+
+    var carouselView;
 
     beforeEach(function(){
-        
-      var panelsCollection = new PanelsCollection();
-        
-      this.carouselView = new CarouselView({
-        collection: panelsCollection
-      }).render();
-
-      panelsCollection.reset([
-        { label: '1' },
-        { label: '2' },
-        { label: '3' },
-        { label: '4' }
-      ]);
-
+      infector.register({
+        carouselView: { type: CarouselView },
+        panelsCollection: { type: PanelsCollection },
+        eventMediator: { value: eventMediator },
+        util: { value: util }
+      });
+      carouselView = infector.get('carouselView');
+      carouselView.render();
     });
 
     afterEach(function(){
-      delete this.carouselView;
+      carouselView.remove();
     });
 
-    it('should remove the most recently added panel when the delete key is pressed', function(){
-      this.carouselView._deleteHandler();
-      expect(this.carouselView.collection.pluck('label')).toEqual([
-        '1',
-        '2',
-        '3'
-      ]);
+    it('should add a panel when enter is pressed', function(){
+      carouselView._rotate = function(){};
+      eventMediator.trigger('enter');
+      expect(carouselView.panelsCollection.at(0).get('label')).toBe('1');
     });
 
-    it('should rotate the carousel to the correct position when a panel is removed', function(){
-      this.carouselView._deleteHandler();
-      expect(this.carouselView.carouselRotation).toEqual(120);
+    it('should remove a panel when delete is pressed', function(){
+      carouselView.panelsCollection.create({ label: 1 });
+      eventMediator.trigger('delete');
+      expect(carouselView.panelsCollection.models).toEqual([]);
     });
 
-    it('should add a panel to the end of the carousel when the enter key is pressed', function(){
-      this.carouselView._enterHandler();
-      expect(this.carouselView.collection.pluck('label')).toEqual([
-        '1',
-        '2',
-        '3',
-        '4',
-        '5'
-      ]);
+    it('should rotate the carousel to the right when the right arrow is pressed', function(){
+      carouselView.panelsCollection.add([{ label: 1 }, { label: 2 }, { label: 3 }]);
+      eventMediator.trigger('rightArrow');
+      expect(carouselView.carouselInner.style.cssText).toMatch(/rotateY\(240deg\)/);
     });
 
-    it('should rotate the carousel to the correct position when a panel is added', function(){
-      this.carouselView._enterHandler();
-      expect(this.carouselView.carouselRotation).toEqual(72);
+    it('should rotate the carousel to the left when the left arrow is pressed', function(){
+      carouselView.panelsCollection.add([{ label: 1 }, { label: 2 }, { label: 3 }]);
+      eventMediator.trigger('leftArrow');
+      expect(carouselView.carouselInner.style.cssText).toMatch(/rotateY\(0deg\)/);
     });
 
-    it('should rotate the carousel to the correct position when the right arrow key is pressed', function(){
-      this.carouselView._rightArrowHandler();
-      expect(this.carouselView.carouselRotation).toEqual(180);
-    });
-
-    it('should rotate the carousel to the correct position when the left arrow key is pressed', function(){
-      this.carouselView._leftArrowHandler();
-      expect(this.carouselView.carouselRotation).toEqual(0);
+    it('should give the panel a random colour when it is created', function(){
+      var util = infector.get('util');
+      util.getRandomRGBA = jasmine.createSpy();
+      carouselView._rotate = function(){};
+      eventMediator.trigger('enter');
+      expect(util.getRandomRGBA).toHaveBeenCalledWith(carouselView.panelOpacity);
     });
 
   });

@@ -9,6 +9,8 @@
     "modernizr": "~2.6.2",
     "requirejs": "~2.1.8",
     "requirejs-text": "~2.0.9",
-    "underscore": "~1.5.1"
+    "underscore": "~1.5.1",
+    "r.js": "~2.1.8",
+    "infector": "~0.5.5"
   }
 }

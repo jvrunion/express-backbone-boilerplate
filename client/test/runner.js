@@ -10,6 +10,7 @@ requirejs.config({
     baseUrl: '/base/client/src/js',
 
     paths: {
+      infector: '/base/bower_components/infector/infector',
       modernizr: '/base/bower_components/modernizr/modernizr',
       jquery: '/base/bower_components/jquery/jquery',
       underscore: '/base/bower_components/underscore/underscore',

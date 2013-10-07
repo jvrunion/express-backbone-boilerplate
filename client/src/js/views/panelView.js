@@ -1,4 +1,4 @@
-define(function(require){
+define(function(require, exports, module) {
 
   'use strict';
 
@@ -6,20 +6,23 @@ define(function(require){
     Handlebars = require('handlebars'),
     panelTemplate = require('text!templates/panel.handlebars');
 
-  var PanelView = Backbone.View.extend({
+  exports = module.exports = Backbone.View.extend({
+
+    constructor: function(panelModel){
+      this.panelModel = panelModel;
+      Backbone.View.apply(this);
+    },
 
     initialize: function(){
-      this.model.bind('destroy', this.remove, this);
-      this.template = Handlebars.compile(panelTemplate);
+      this.panelModel.on('destroy', this.remove, this);
+      this.panelTemplate = Handlebars.compile(panelTemplate);
     },
 
     render: function(){
-      this.setElement(this.template(this.model.toJSON()));
+      this.setElement(this.panelTemplate(this.panelModel.toJSON()));
       return this;
     }
 
-  });
-
-  return PanelView;
+  }, { infect: ['panelModel'] });
 
 });
