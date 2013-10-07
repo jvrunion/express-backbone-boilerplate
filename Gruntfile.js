@@ -121,7 +121,14 @@ module.exports = function(grunt){
           name: 'main',
           out: '_dist/client/src/js/main.js',
           paths: {
-            requireLib: 'lib/require'
+            requireLib: '../../../bower_components/requirejs/require',
+            infector: '../../../bower_components/infector/lib/infector',
+            modernizr: '../../../bower_components/modernizr/modernizr',
+            jquery: '../../../bower_components/jquery/jquery',
+            underscore: '../../../bower_components/underscore/underscore',
+            backbone: '../../../bower_components/backbone/backbone',
+            handlebars: '../../../bower_components/handlebars/handlebars',
+            text: '../../../bower_components/requirejs-text/text'
           }
         }
       }
